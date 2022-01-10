@@ -54,7 +54,7 @@ double Sensors::measureVoltage(const int analogPin, const double dividerMultiply
 {
 	double splitedMean = 0;
     int badSamples = 0;
-	const int NUMBER_OF_SAMPLES = 100;
+	const int NUMBER_OF_SAMPLES = 80;
     for(int i = 0; i < NUMBER_OF_SAMPLES; ++i)
     {
         int readValue = analogRead(analogPin);
@@ -73,7 +73,7 @@ double Sensors::measureVoltage(const int analogPin, const double dividerMultiply
         }
         splitedMean += result/NUMBER_OF_SAMPLES;
         
-        delay(20);
+        delay(15);
     }
     return splitedMean;
 }

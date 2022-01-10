@@ -9,7 +9,7 @@ CurrentRegulator::CurrentRegulator() :
     PWM_PIN_TRANSISTOR(4),
     PWM_PIN_REGULATOR(13),
     ANALOG_WRITE_MAX(254),
-    TRANSISTOR_NEARLY_OPEN_VAL(50),
+    TRANSISTOR_NEARLY_OPEN_VAL(60),
     MAX_REGULATOR_ADJUST_VOLTAGE(10),
     REGULATOR_REFERENCE_VOLTAGE(1.25),
     transValue(0),
@@ -34,6 +34,10 @@ void CurrentRegulator::applyProfile( const ChargingProfile& profile )
 
     analogWrite(PWM_PIN_TRANSISTOR, transValue);
     analogWrite(PWM_PIN_REGULATOR, regulValue);
+    Serial.print("tranzystor: ");
+    Serial.println(transValue);
+    Serial.print("regulator: ");
+    Serial.println(regulValue);
 }
 
 void CurrentRegulator::adjustOutputsAccordingToInputs( const ChargingProfile& profile )

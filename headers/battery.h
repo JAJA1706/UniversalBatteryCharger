@@ -17,16 +17,16 @@ private:
     ChargingProfile steps[MAX_NUM_OF_STEPS];
 
     double minimalVoltage;
-    double voltage;
+    double capacity;
     BatteryMode mode;
 public:
     Battery();
-    Battery(const int stepsNum, const double minVoltage, const double Voltage, const ChargingProfile profile);
+    Battery(const double minVoltage, const double capac, const ChargingProfile profile);
+    Battery(const int numOfProfiles, const double minVoltage, const double capac, const ChargingProfile* profiles);
     ChargingProfile& getOngoingChargingProfile();
     bool isCharged() const;
     bool isDischarged() const;
     double getMinVoltage() const;
-    double getNominalVoltage() const;
     BatteryMode getMode() const;
     void setMode(const BatteryMode newMode);
     void moveToNextStep();

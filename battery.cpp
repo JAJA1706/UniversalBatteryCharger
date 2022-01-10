@@ -4,17 +4,26 @@ constexpr int Battery::MAX_NUM_OF_STEPS;
 
 Battery::Battery() : 
     numberOfSteps(0) ,currentStep(0), steps{},
-    minimalVoltage(0), voltage(0), mode(BatteryMode::Wait)
+    minimalVoltage(0), capacity(0), mode(BatteryMode::Wait)
 {}
 
-Battery::Battery(const int stepsNum, const double minVoltage, const double volt, const ChargingProfile profile) : 
-    currentStep(0), steps{profile},
-    minimalVoltage(minVoltage), voltage(volt), mode(BatteryMode::Wait)
+Battery::Battery(const double minVoltage, const double capac, const ChargingProfile profile) : 
+    numberOfSteps(1), currentStep(0), steps{profile},
+    minimalVoltage(minVoltage), capacity(capac), mode(BatteryMode::Wait)
+{}
+
+Battery::Battery(const int numOfProfiles, const double minVoltage, const double capac, const ChargingProfile* profiles) : 
+    currentStep(0), minimalVoltage(minVoltage), capacity(capac), mode(BatteryMode::Wait)
 {
-    if(stepsNum > MAX_NUM_OF_STEPS)
+    if(numOfProfiles > MAX_NUM_OF_STEPS)
         numberOfSteps = 4;
     else
-        numberOfSteps = stepsNum;
+        numberOfSteps = numOfProfiles;
+
+    for(int i = 0; i < numberOfSteps; ++i)
+    {
+        steps[i] = profiles[i];
+    }
 }
 
 bool Battery::isCharged() const
@@ -30,11 +39,6 @@ bool Battery::isDischarged() const
 double Battery::getMinVoltage() const
 {
     return minimalVoltage;
-}
-
-double Battery::getNominalVoltage() const
-{
-    return voltage;
 }
 
 BatteryMode Battery::getMode() const

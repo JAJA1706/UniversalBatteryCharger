@@ -97,6 +97,12 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
     if( maxProfileValueHasBeenExceeded(profile) )
     {
         result = -1;
+        Serial.print("current: ");
+        Serial.print(Sensors::current);
+        Serial.print("wolt: ");
+        Serial.print(meanBatteryVoltage);
+        Serial.print("temp: ");
+        Serial.print(Sensors::batteryTemperature);
     }
 
     if(newVoltageData)
@@ -149,9 +155,9 @@ void ChargingMonitor::checkTimer()
 void ChargingMonitor::fillTimedTables(const unsigned long voltageInvervalTime, const unsigned long temperatureInvervalTime)
 {
     unsigned long now = millis();
-    if( voltageTimer + voltageInvervalTime < now )
+    if( voltageInvervalTime != 0 && voltageTimer + voltageInvervalTime < now )
     {
-        voltageInIntervals[voltageTableIter.at()] = meanBatteryVoltage; //Sensors::batteryVoltage;
+        voltageInIntervals[voltageTableIter.at()] = meanBatteryVoltage;
         newVoltageData = true;
         voltageTimer = now;
         ++voltageTableIter;
@@ -161,9 +167,9 @@ void ChargingMonitor::fillTimedTables(const unsigned long voltageInvervalTime, c
         newVoltageData = false;
     }
 
-    if( temperatureTimer + temperatureInvervalTime < now )
+    if( temperatureInvervalTime != 0 && temperatureTimer + temperatureInvervalTime < now )
     {
-        temperatureInIntervals[temperatureTableIter.at()] = meanBatteryVoltage; //Sensors::batteryTemperature;
+        temperatureInIntervals[temperatureTableIter.at()] = meanBatteryVoltage;
         newTemperatureData = true;
         temperatureTimer = now;
         ++temperatureTableIter;
@@ -177,6 +183,7 @@ void ChargingMonitor::fillTimedTables(const unsigned long voltageInvervalTime, c
 void ChargingMonitor::calculateMeanVoltage()
 {
     meanVoltageTable[meanTableIter.at()] = Sensors::batteryVoltage;
+    Serial.println(Sensors::batteryVoltage);
     ++meanTableIter;
     
     meanBatteryVoltage = 0;
@@ -185,6 +192,7 @@ void ChargingMonitor::calculateMeanVoltage()
         meanBatteryVoltage += meanVoltageTable[i];
     }
     meanBatteryVoltage /= MEAN_TABLE_SIZE;
+    Serial.println(meanBatteryVoltage);
 }
 
 void ChargingMonitor::savePotentialMaxVoltage()
@@ -223,7 +231,7 @@ void ChargingMonitor::batteryChargingEnded()
 unsigned long ChargingMonitor::getPassedTime(const unsigned startTime) const
 {
     unsigned long currentTime = millis();
-    if(currentTime > startTime) //timer overflow protection
+    if(currentTime >= startTime) //timer overflow protection
         return currentTime - startTime;
     else
         return currentTime + UINT32_MAX - startTime;
