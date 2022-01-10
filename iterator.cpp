@@ -1,14 +1,14 @@
 #include "headers/iterator.h"
 
-Iterator::Iterator(const unsigned int _tableSize) : tableSize(_tableSize), position(0)
+InfiniteIterator::InfiniteIterator(const unsigned int _tableSize) : tableSize(_tableSize), position(0)
 {}
 
-unsigned int Iterator::operator+(const unsigned int offset) const
+unsigned int InfiniteIterator::operator+(const unsigned int offset) const
 {
     return (position + offset) % tableSize;
 }
 
-unsigned int Iterator::operator-(const unsigned int offset) const
+unsigned int InfiniteIterator::operator-(const unsigned int offset) const
 {
     int newPos = position - offset % tableSize;
     if (newPos < 0)
@@ -17,14 +17,14 @@ unsigned int Iterator::operator-(const unsigned int offset) const
         return newPos;
 }
 
-Iterator& Iterator::operator++()
+InfiniteIterator& InfiniteIterator::operator++()
 {
     ++position;
     if(position == tableSize)
         position = 0;
 }
 
-Iterator& Iterator::operator--()
+InfiniteIterator& InfiniteIterator::operator--()
 {
     if(position == 0)
         position = tableSize;
@@ -32,12 +32,12 @@ Iterator& Iterator::operator--()
     --position;
 }
 
-Iterator& Iterator::operator=(const unsigned int number)
+InfiniteIterator& InfiniteIterator::operator=(const unsigned int number)
 {
     position = number % tableSize;
 }
 
-unsigned int Iterator::at() const
+unsigned int InfiniteIterator::at() const
 {
     return position;
 }

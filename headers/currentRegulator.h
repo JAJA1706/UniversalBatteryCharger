@@ -17,6 +17,7 @@ private:
     int regulValue;
 
     unsigned int loopCount;
+    bool stabilizeCurrent;
 
     void adjustRegulator(const int val);
     void adjustTransistor(const int val);

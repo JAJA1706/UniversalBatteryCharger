@@ -25,12 +25,15 @@ Sensors::Sensors() :
 	VOLTAGE_PIN_1(A0), 
 	VOLTAGE_PIN_2(A1), 
 	VOLTAGE_PIN_3(A2), 
-    VOLTAGE_PIN_4(A3) 
+    VOLTAGE_PIN_4(A3),
+    VOLTAGE_TO_TEMPERATURE_RATIO(0.01),
+    TEMPERATURE_PIN(A4)
 {
     pinMode(VOLTAGE_PIN_1, INPUT);
     pinMode(VOLTAGE_PIN_2, INPUT);
     pinMode(VOLTAGE_PIN_3, INPUT);
     pinMode(VOLTAGE_PIN_4, INPUT);
+    pinMode(TEMPERATURE_PIN, INPUT);
 }
 
 
@@ -47,7 +50,7 @@ void Sensors::getDataFromSensors()
     batteryVoltage = voltage2 - voltage3;
     dischargeBatteryVoltage = voltage4;
 
-    batteryTemperature = measureTemperature(0);
+    batteryTemperature = measureTemperature(TEMPERATURE_PIN);
 }
 
 double Sensors::measureVoltage(const int analogPin, const double dividerMultiply)
@@ -80,7 +83,12 @@ double Sensors::measureVoltage(const int analogPin, const double dividerMultiply
 
 double Sensors::measureTemperature(const int analogPin)
 {
-    return 0;
+    const int ANALOG_READ_RESOLUTION = 1023;
+    double result = analogRead(analogPin);  
+    result *= VOLTAGE_REFERENCE;
+    result /= ANALOG_READ_RESOLUTION;
+    result /= VOLTAGE_TO_TEMPERATURE_RATIO;
+    return result;
 }
 
 constexpr double Sensors::voltageDividerMultiplier(const double firstRes, const double secondRes) const

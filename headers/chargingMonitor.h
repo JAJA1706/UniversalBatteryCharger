@@ -18,16 +18,16 @@ private:
     unsigned int loopCount;
 
     unsigned long voltageTimer;
-    Iterator voltageTableIter;
+    InfiniteIterator voltageTableIter;
     bool newVoltageData;
     double voltageInIntervals[TIMED_TABLE_SIZE];
     unsigned long temperatureTimer;
-    Iterator temperatureTableIter;
+    InfiniteIterator temperatureTableIter;
     bool newTemperatureData;
     double temperatureInIntervals[TIMED_TABLE_SIZE];
 
 
-    Iterator meanTableIter;
+    InfiniteIterator meanTableIter;
     double meanVoltageTable[MEAN_TABLE_SIZE];
     double meanBatteryVoltage;
     double maxRecordedVoltage;

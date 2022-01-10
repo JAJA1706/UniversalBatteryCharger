@@ -1,16 +1,16 @@
 #pragma once
 
-class Iterator
+class InfiniteIterator
 {
 private:
     const unsigned int tableSize;
     unsigned int position;
 public:
-    Iterator(const unsigned int _tableSize);
+    InfiniteIterator(const unsigned int _tableSize);
     unsigned int at() const;
     unsigned int operator+(const unsigned int offset) const;
     unsigned int operator-(const unsigned int offset) const;
-    Iterator& operator++();
-    Iterator& operator--();
-    Iterator& operator=(const unsigned int number);
+    InfiniteIterator& operator++();
+    InfiniteIterator& operator--();
+    InfiniteIterator& operator=(const unsigned int number);
 };

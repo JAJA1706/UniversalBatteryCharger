@@ -18,6 +18,8 @@ private:
 	const int VOLTAGE_PIN_2;
 	const int VOLTAGE_PIN_3;
 	const int VOLTAGE_PIN_4;
+	const double VOLTAGE_TO_TEMPERATURE_RATIO;
+	const int TEMPERATURE_PIN;
 	
 	constexpr double voltageDividerMultiplier(const double firstRes, const double secondRes) const;
 	double measureVoltage(const int analogPin, const double dividerMultiply);

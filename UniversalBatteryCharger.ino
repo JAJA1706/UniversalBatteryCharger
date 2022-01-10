@@ -7,14 +7,14 @@ Sensors sensors;
 Charger charger;
 ChargingProfile profiles[2] = {ChargingProfile(ChargingMethod::constantCurrent, 6000, 1500, 50, 60000, 1500, 100, 0, 0, 0, 0, 0, 0), 
                                ChargingProfile(ChargingMethod::constantCurrent, 6000, 1500, 50, 3600000, 1500, 200, 0, 0, 0, 0, 0, 0)};
-Battery balz(2, 1, 2000, profiles);
+Battery battery(2, 1, 2000, profiles);
 
 void setup() {
   analogReference(INTERNAL1V1);
   Serial.begin(115200);
   while(!Serial){}
   Serial.println("Jazdunia!!!");
-  charger.addBattery(0,balz);
+  charger.addBattery(0,battery);
   charger.charge(0);
 }
 

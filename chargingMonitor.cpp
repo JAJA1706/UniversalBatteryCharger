@@ -97,12 +97,6 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
     if( maxProfileValueHasBeenExceeded(profile) )
     {
         result = -1;
-        Serial.print("current: ");
-        Serial.print(Sensors::current);
-        Serial.print("wolt: ");
-        Serial.print(meanBatteryVoltage);
-        Serial.print("temp: ");
-        Serial.print(Sensors::batteryTemperature);
     }
 
     if(newVoltageData)
@@ -169,7 +163,7 @@ void ChargingMonitor::fillTimedTables(const unsigned long voltageInvervalTime, c
 
     if( temperatureInvervalTime != 0 && temperatureTimer + temperatureInvervalTime < now )
     {
-        temperatureInIntervals[temperatureTableIter.at()] = meanBatteryVoltage;
+        temperatureInIntervals[temperatureTableIter.at()] = Sensors::batteryTemperature;
         newTemperatureData = true;
         temperatureTimer = now;
         ++temperatureTableIter;
@@ -183,7 +177,6 @@ void ChargingMonitor::fillTimedTables(const unsigned long voltageInvervalTime, c
 void ChargingMonitor::calculateMeanVoltage()
 {
     meanVoltageTable[meanTableIter.at()] = Sensors::batteryVoltage;
-    Serial.println(Sensors::batteryVoltage);
     ++meanTableIter;
     
     meanBatteryVoltage = 0;
@@ -192,7 +185,6 @@ void ChargingMonitor::calculateMeanVoltage()
         meanBatteryVoltage += meanVoltageTable[i];
     }
     meanBatteryVoltage /= MEAN_TABLE_SIZE;
-    Serial.println(meanBatteryVoltage);
 }
 
 void ChargingMonitor::savePotentialMaxVoltage()

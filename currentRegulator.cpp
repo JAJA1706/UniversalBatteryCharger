@@ -10,11 +10,12 @@ CurrentRegulator::CurrentRegulator() :
     PWM_PIN_REGULATOR(13),
     ANALOG_WRITE_MAX(254),
     TRANSISTOR_NEARLY_OPEN_VAL(60),
-    MAX_REGULATOR_ADJUST_VOLTAGE(10),
-    REGULATOR_REFERENCE_VOLTAGE(1.25),
+    MAX_REGULATOR_ADJUST_VOLTAGE(10000),
+    REGULATOR_REFERENCE_VOLTAGE(1250),
     transValue(0),
     regulValue(ANALOG_WRITE_MAX),
-    loopCount(0)
+    loopCount(0),
+    stabilizeCurrent(false)
 {
     pinMode(PWM_PIN_TRANSISTOR, OUTPUT);
     pinMode(PWM_PIN_REGULATOR, OUTPUT);
@@ -25,6 +26,7 @@ void CurrentRegulator::applyProfile( const ChargingProfile& profile )
     checkLoop();
 
     const int POWER_CHECK_RATIO = 10;
+    const int BALANCE_OUTPUT_RATIO = 2;
     if(loopCount % POWER_CHECK_RATIO == 0)
     {
         balancePowerDissipation();
@@ -34,10 +36,6 @@ void CurrentRegulator::applyProfile( const ChargingProfile& profile )
 
     analogWrite(PWM_PIN_TRANSISTOR, transValue);
     analogWrite(PWM_PIN_REGULATOR, regulValue);
-    Serial.print("tranzystor: ");
-    Serial.println(transValue);
-    Serial.print("regulator: ");
-    Serial.println(regulValue);
 }
 
 void CurrentRegulator::adjustOutputsAccordingToInputs( const ChargingProfile& profile )
@@ -47,6 +45,22 @@ void CurrentRegulator::adjustOutputsAccordingToInputs( const ChargingProfile& pr
         adjustTransistor(-2);
     }
 
+    stabilizeCurrent = false;
+    if(profile.method == ChargingMethod::constantCurrent || profile.method == ChargingMethod::trickleCharge)
+    {
+        const double CLOSE_TO_DESIRED_VALUE = 0.1;
+        if(Sensors::current > profile.desiredCurrent - profile.desiredCurrent * CLOSE_TO_DESIRED_VALUE
+        && Sensors::current < profile.desiredCurrent + profile.desiredCurrent * CLOSE_TO_DESIRED_VALUE)
+            stabilizeCurrent = true;
+    }
+    else if(profile.method == ChargingMethod::constantVoltage)
+    {
+        const double CLOSE_TO_DESIRED_VALUE = 0.05;
+        if(Sensors::batteryVoltage > profile.desiredVoltage - profile.desiredVoltage * CLOSE_TO_DESIRED_VALUE
+        && Sensors::batteryVoltage < profile.desiredVoltage + profile.desiredVoltage * CLOSE_TO_DESIRED_VALUE)
+            stabilizeCurrent = true;
+    }
+
     const double MIN_REGUL_BATTERY_DIFF = 0.4; 
     if(Sensors::powerResistorVoltageDrop + Sensors::transistorVoltageDrop < MIN_REGUL_BATTERY_DIFF)
     {
@@ -54,13 +68,13 @@ void CurrentRegulator::adjustOutputsAccordingToInputs( const ChargingProfile& pr
     }
 
     int* component;
-    if(loopCount % 2)
+    if(stabilizeCurrent || loopCount % 3)
     {
-        component = &transValue;
+        component = &regulValue;
     }
     else
     {
-        component = &regulValue;
+        component = &transValue;
     }
 
     if(profile.method == ChargingMethod::constantCurrent || profile.method == ChargingMethod::trickleCharge)
