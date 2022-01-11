@@ -9,7 +9,7 @@ CurrentRegulator::CurrentRegulator() :
     PWM_PIN_TRANSISTOR(4),
     PWM_PIN_REGULATOR(13),
     ANALOG_WRITE_MAX(254),
-    TRANSISTOR_NEARLY_OPEN_VAL(60),
+    TRANSISTOR_NEARLY_OPEN_VAL(66),
     MAX_REGULATOR_ADJUST_VOLTAGE(10000),
     REGULATOR_REFERENCE_VOLTAGE(1250),
     transValue(0),
@@ -36,6 +36,10 @@ void CurrentRegulator::applyProfile( const ChargingProfile& profile )
 
     analogWrite(PWM_PIN_TRANSISTOR, transValue);
     analogWrite(PWM_PIN_REGULATOR, regulValue);
+    Serial.print("tranzystor: ");
+    Serial.print(transValue);
+    Serial.print("   regulator: ");
+    Serial.println(regulValue);
 }
 
 void CurrentRegulator::adjustOutputsAccordingToInputs( const ChargingProfile& profile )
@@ -48,14 +52,14 @@ void CurrentRegulator::adjustOutputsAccordingToInputs( const ChargingProfile& pr
     stabilizeCurrent = false;
     if(profile.method == ChargingMethod::constantCurrent || profile.method == ChargingMethod::trickleCharge)
     {
-        const double CLOSE_TO_DESIRED_VALUE = 0.1;
+        const double CLOSE_TO_DESIRED_VALUE = 0.2;
         if(Sensors::current > profile.desiredCurrent - profile.desiredCurrent * CLOSE_TO_DESIRED_VALUE
         && Sensors::current < profile.desiredCurrent + profile.desiredCurrent * CLOSE_TO_DESIRED_VALUE)
             stabilizeCurrent = true;
     }
     else if(profile.method == ChargingMethod::constantVoltage)
     {
-        const double CLOSE_TO_DESIRED_VALUE = 0.05;
+        const double CLOSE_TO_DESIRED_VALUE = 0.2;
         if(Sensors::batteryVoltage > profile.desiredVoltage - profile.desiredVoltage * CLOSE_TO_DESIRED_VALUE
         && Sensors::batteryVoltage < profile.desiredVoltage + profile.desiredVoltage * CLOSE_TO_DESIRED_VALUE)
             stabilizeCurrent = true;
@@ -68,7 +72,7 @@ void CurrentRegulator::adjustOutputsAccordingToInputs( const ChargingProfile& pr
     }
 
     int* component;
-    if(stabilizeCurrent || loopCount % 3)
+    if(stabilizeCurrent || loopCount % 4 == 0)
     {
         component = &regulValue;
     }
@@ -100,26 +104,26 @@ void CurrentRegulator::balancePowerDissipation()
     double powerDissOnRegulator = Sensors::current * Sensors::regulatorVoltageDrop / 1000;
     if(powerDissOnRegulator > MAX_POWER_DISSIP_REGULATOR)
     {
-        adjustRegulator(4);
+        adjustRegulator(6);
         adjustTransistor(-4);
     }
 
     double powerDissOnTransistor = Sensors::current * Sensors::transistorVoltageDrop / 1000;
     if(powerDissOnTransistor > MAX_POWER_DISSIP_TRANSISTOR)
     {
-        adjustRegulator(-4);
+        adjustRegulator(-6);
         adjustTransistor(4);
     }
 
     double balancedPowerDissOnRegulator = powerDissOnRegulator * MAX_POWER_DISSIP_TRANSISTOR / MAX_POWER_DISSIP_REGULATOR;
     if( balancedPowerDissOnRegulator > powerDissOnTransistor * 1.5 )
     {
-        adjustRegulator(1);
+        adjustRegulator(4);
         adjustTransistor(-1);
     }
     if( balancedPowerDissOnRegulator * 1.5 < powerDissOnTransistor)
     {
-        adjustRegulator(-1);
+        adjustRegulator(-4);
         adjustTransistor(1);
     }
 

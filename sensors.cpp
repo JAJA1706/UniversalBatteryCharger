@@ -51,6 +51,13 @@ void Sensors::getDataFromSensors()
     dischargeBatteryVoltage = voltage4;
 
     batteryTemperature = measureTemperature(TEMPERATURE_PIN);
+
+    Serial.print("battery voltage: ");
+    Serial.print(batteryVoltage);
+    Serial.print("   current: ");
+    Serial.println(current);
+    Serial.print("temperature: ");
+    Serial.println(batteryTemperature);
 }
 
 double Sensors::measureVoltage(const int analogPin, const double dividerMultiply)

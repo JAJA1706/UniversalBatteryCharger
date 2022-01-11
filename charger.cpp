@@ -47,7 +47,7 @@ void Charger::checkChargeQueue()
 
     if( result == 1 )
     {
-        monitor.resetProfileTimer();
+        monitor.profileChargingEnded();
         batteries[chargeQueue[0]].moveToNextStep();
         if( batteries[chargeQueue[0]].isChargingCompleted() )
         {

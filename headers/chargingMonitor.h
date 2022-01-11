@@ -8,6 +8,7 @@ private:
     static constexpr int TIMED_TABLE_SIZE = 10;
     static constexpr int MEAN_TABLE_SIZE = 20;
     const int REQUIRED_RESULTS_TO_END;
+    const int REQUIRED_INTERVAL_RESULTS_TO_END;
 
     unsigned long batteryStartTime;
     unsigned long batteryChargingTime;
@@ -41,12 +42,13 @@ private:
     void calculateMeanVoltage();
     void savePotentialMaxVoltage();
     void clearBufferTables();
+    void resetStateCounters();
     unsigned long getPassedTime(const unsigned startTime) const;
     bool maxProfileValueHasBeenExceeded(const ChargingProfile& profile) const;
 public:
     ChargingMonitor();
-    void resetProfileTimer();
     void batteryChargingStarted();
     void batteryChargingEnded();
+    void profileChargingEnded();
     int checkForEndOfTheCharge(const ChargingProfile& profile);
 };
