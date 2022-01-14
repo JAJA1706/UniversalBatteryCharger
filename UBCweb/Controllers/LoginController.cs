@@ -13,43 +13,30 @@ namespace UBCweb.Controllers
     {
         public string token { get; set; }
     }
-    public class Credentials
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
-    }
 
     [ApiController]
     [Route("[controller]")]
-    public class LoginController : Controller
+    public class LoginController : ControllerBase
     {
         [HttpPost]
         public string Index(Credentials credentials)
         {
-            if(credentials.Username.Equals("dick"))
+            string[] splits = { "0", "", "" };
+            if (System.IO.File.Exists(RegisterCredentials.FILE_PATH))
             {
-                Token token = new Token { token = "test123" };
-                return JsonSerializer.Serialize(token);
+                string[] lines = System.IO.File.ReadAllLines(RegisterCredentials.FILE_PATH);
+                for (int i = 0; i < lines.Length; ++i)
+                {
+                    splits = lines[i].Split(';');
+                    if (splits[1].Equals(credentials.Username) && splits[2].Equals(credentials.Password))
+                    {
+                        Token token = new Token { token = splits[0] };
+                        return JsonSerializer.Serialize(token);
+                    }
+                }
             }
-            return "no";
+
+            return JsonSerializer.Serialize("no");
         }
-
-        //public List<UserModel> PutValue()
-        //{
-        //    var users = new List<UserModel>
-        //    {
-        //        new UserModel{ Id=1, Username="bals", Password="dick"}
-        //    };
-
-        //    return users;
-        //}
-
-        //[HttpPost]
-        //public IActionResult Verify(UserModel usr)
-        //{
-        //    var u = PutValue();
-        //    var ue = u.Where(u => u.Username.Equals(usr.Username));
-        //    var up = ue.Where(p => p.Password.Equals(usr.Password));
-        //}
     }
 }

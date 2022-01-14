@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import './Login.css';
 
 async function loginUser(credentials) {
     return fetch('http://10.1.9.237:5000/login', {
@@ -16,6 +15,7 @@ async function loginUser(credentials) {
 export default function Login({ setToken }) {
     const [username, setUserName] = useState();
     const [password, setPassword] = useState();
+    const [resultText, setResultText] = useState();
 
     const handleSubmit = async e => {
         e.preventDefault();
@@ -23,23 +23,27 @@ export default function Login({ setToken }) {
             username,
             password
         });
-        setToken();
+        if (token === "no")
+            setResultText("uzytkownik o takiej kombinacji nazwy i hasla nie istnieje");
+        else
+            setToken(token);
     }
 
     return (
-        <div className="login-wrapper">
+        <div>
             <h1>Zaloguj sie</h1>
-            <form onSubmit={handleSubmit} >
+            <form>
                 <label>
-                    <p>Username</p>
+                    <p>Uzytkownik</p>
                     <input type="text" onChange={e => setUserName(e.target.value)}/>
                 </label>
                 <label>
-                    <p>Password</p>
+                    <p>Haslo</p>
                     <input type="password" onChange={e => setPassword(e.target.value)} />
                 </label>
                 <div>
-                    <button type="submit">Submit</button>
+                    <p style={{ color: 'red' }}>{resultText}</p>
+                    <button type="submit" onClick={handleSubmit}>Zatwierdz</button>
                 </div>
             </form>
         </div>
