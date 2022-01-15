@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace UBCweb.Models
+﻿namespace UBCweb.Models
 {
     public class Battery
     {

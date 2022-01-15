@@ -1,12 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Encodings.Web;
 using System;
 using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UBCweb.Models;
 
 namespace UBCweb.Controllers
@@ -31,14 +27,18 @@ namespace UBCweb.Controllers
                 return JsonSerializer.Serialize("hasla nie sa sobie rowne");
 
             string[] splits = { "0", "", "" };
-            if (System.IO.File.Exists(RegisterCredentials.FILE_PATH)){
-                string[] lines = System.IO.File.ReadAllLines(RegisterCredentials.FILE_PATH);
-                for (int i = 0; i < lines.Length; ++i)
+            lock (RegisterCredentials.credentialsLock)
+            {
+                if (System.IO.File.Exists(RegisterCredentials.FILE_PATH))
                 {
-                    splits = lines[i].Split(';');
-                    if (splits[1].Equals(credentials.Username))
+                    string[] lines = System.IO.File.ReadAllLines(RegisterCredentials.FILE_PATH);
+                    for (int i = 0; i < lines.Length; ++i)
                     {
-                        return JsonSerializer.Serialize("Taki uzytkownik juz istnieje");
+                        splits = lines[i].Split(';');
+                        if (splits[1].Equals(credentials.Username))
+                        {
+                            return JsonSerializer.Serialize("Taki uzytkownik juz istnieje");
+                        }
                     }
                 }
             }
@@ -46,10 +46,13 @@ namespace UBCweb.Controllers
             int id = Int32.Parse(splits[0]);
             ++id;
             string newData = id.ToString() + ';' + credentials.Username + ';' + credentials.Password + '\n';
-            FileStream fs = System.IO.File.OpenWrite(RegisterCredentials.FILE_PATH);
-            fs.Seek(0, SeekOrigin.End);
-            fs.Write(Encoding.UTF8.GetBytes(newData));
-            fs.Close();
+            lock (RegisterCredentials.credentialsLock)
+            {
+                FileStream fs = System.IO.File.OpenWrite(RegisterCredentials.FILE_PATH);
+                fs.Seek(0, SeekOrigin.End);
+                fs.Write(Encoding.UTF8.GetBytes(newData));
+                fs.Close();
+            }
 
             return JsonSerializer.Serialize("profil utworzony");
         }

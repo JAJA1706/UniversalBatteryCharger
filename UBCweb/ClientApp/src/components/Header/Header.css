@@ -1,0 +1,16 @@
+.header {
+    margin-top: 0px;
+    padding: 20px 10px;
+    overflow: hidden;
+    background: #343a40;
+}
+
+.headerTextStyle {
+    color: #E3E4E4;
+}
+
+.headerStyle {
+    display: flex;
+    justify-content: space-between;
+    /*background-color:cornflowerblue;*/
+}
