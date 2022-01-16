@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 async function RegisterUser(credentials) {
-    return fetch('http://10.1.9.237:5000/register', {
+    return fetch('http://localhost:5000/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -46,7 +46,7 @@ export default function Register() {
                 </label>
                 <label>
                     <p>Powtorz haslo</p>
-                    <input type="password2" onChange={e => setPassword2(e.target.value)} />
+                    <input type="password" onChange={e => setPassword2(e.target.value)} />
                 </label>
                 <div>
                     <p style={resultColor}>{resultText}</p>

@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import Dashboard from "./components/Dashboard/Dashboard";
-import Preferences from "./components/Preferences/Preferences";
 import Login from "./components/Login/Login";
 import Register from './components/Login//Register';
 import useToken from "./components/Hooks/useToken";
@@ -37,16 +35,17 @@ export default function App() {
     <div>
         <Header TokenVal={token} setToken={setToken}/>
         <div className="wrapper">
-            <BrowserRouter>
-                <Switch>
-                    <Route path="/dashboard">
-                        <Dashboard />
-                    </Route>
-                    <Route path="/preferences">
-                        <Preferences />
-                    </Route>
-                </Switch>
-            </BrowserRouter>
+            <Dashboard/>
+            {/*<BrowserRouter>*/}
+            {/*    <Switch>*/}
+            {/*        <Route path="/dashboard">*/}
+            {/*            <Dashboard />*/}
+            {/*        </Route>*/}
+            {/*        <Route path="/preferences">*/}
+            {/*            <Preferences />*/}
+            {/*        </Route>*/}
+            {/*    </Switch>*/}
+            {/*</BrowserRouter>*/}
         </div>
     </div>
     );
