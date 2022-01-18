@@ -33,7 +33,7 @@ export default function Register() {
     }
 
     return (
-        <div className="login-wrapper">
+        <div>
             <h1>Zarejestruj sie</h1>
             <form>
                 <label>

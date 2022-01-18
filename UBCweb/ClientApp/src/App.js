@@ -32,10 +32,10 @@ export default function App() {
     }
 
     return (
-    <div>
-        <Header TokenVal={token} setToken={setToken}/>
-        <div className="wrapper">
-            <Dashboard/>
+        <div>
+        <Header TokenVal={token.TokenVal} setToken={setToken} />
+        <div className="login-wrapper">
+            <Dashboard userID={token.UserID}/>
             {/*<BrowserRouter>*/}
             {/*    <Switch>*/}
             {/*        <Route path="/dashboard">*/}

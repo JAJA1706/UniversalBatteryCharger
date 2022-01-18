@@ -2,8 +2,15 @@
 {
     public class Battery
     {
-        public int Id { get; set; }
-        public int Capacity { get; set; }
-        public int Voltage { get; set; }
+        public string BatteryMode { get; set; }
+        public string Capacity { get; set; }
+        public string MinVoltage { get; set; }
+    }
+
+    public class BatteryMonitorData
+    {
+        public string Completion { get; set; }
+        public string CellVoltage { get; set; }
+        public string CurrentFlowing { get; set; }
     }
 }

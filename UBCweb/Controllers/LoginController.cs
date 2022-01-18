@@ -30,8 +30,10 @@ namespace UBCweb.Controllers
                             Byte[] bytes = new byte[16];
                             tokenGenerator.GetBytes(bytes);
                             UInt32 tokenValue = BitConverter.ToUInt32(bytes);
-                            Token token = new Token { TokenVal = tokenValue.ToString() };
-                            AddUserToLogged(credentials.Username, tokenValue);
+
+                            int userID = Convert.ToInt32(splits[0]);
+                            Token token = new Token { UserID = userID, TokenVal = tokenValue.ToString() };
+                            Credentials.AddUserToLogged(credentials.Username, tokenValue);
                             return JsonSerializer.Serialize(token);
                         }
                     }
@@ -63,18 +65,6 @@ namespace UBCweb.Controllers
                 }
             }
             return JsonSerializer.Serialize("bad");
-        }
-
-        private void AddUserToLogged(string username, UInt32 tokenValue)
-        {
-            string newData = username + ';' + tokenValue.ToString() + '\n';
-            lock (Credentials.loggedLock)
-            {
-                FileStream fs = System.IO.File.OpenWrite(Credentials.FILE_PATH_LOGGED);
-                fs.Seek(0, SeekOrigin.End);
-                fs.Write(Encoding.UTF8.GetBytes(newData));
-                fs.Close();
-            }
         }
     }
 }

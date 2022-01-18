@@ -1,0 +1,10 @@
+.batteryFormStyle {
+    display: flex;
+    flex-direction: column;
+}
+
+.batteryAndMonitor {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+}

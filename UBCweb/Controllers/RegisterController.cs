@@ -15,16 +15,10 @@ namespace UBCweb.Controllers
         [HttpPost]
         public string Index(RegisterCredentials credentials)
         {
-            if ( string.IsNullOrEmpty(credentials.Username) )
-                return JsonSerializer.Serialize("Nazwa uzytkownika nie moze byc pusta");
-            if ( string.IsNullOrEmpty(credentials.Password) || string.IsNullOrEmpty(credentials.Password2))
-                return JsonSerializer.Serialize("Haslo nie moze byc puste");
-            if( CheckForUnallowedChars(credentials.Username) )
-                return JsonSerializer.Serialize("Nazwa uzytkownika moze zawierac tylko liczby i litery");
-            if (CheckForUnallowedChars(credentials.Password) || CheckForUnallowedChars(credentials.Password2))
-                return JsonSerializer.Serialize("Haslo moze zawierac tylko liczby i litery");
-            if (credentials.Password != credentials.Password2)
-                return JsonSerializer.Serialize("hasla nie sa sobie rowne");
+
+            string result = RegisterCredentials.CheckCredentials(credentials);
+            if(result != "")
+                return JsonSerializer.Serialize(result);
 
             string[] splits = { "0", "", "" };
             lock (RegisterCredentials.credentialsLock)
@@ -55,17 +49,6 @@ namespace UBCweb.Controllers
             }
 
             return JsonSerializer.Serialize("profil utworzony");
-        }
-
-        private bool CheckForUnallowedChars( string str )
-        {
-            foreach(char x in str )
-            {
-                if (x < 48 || (x > 57 && x < 65) || (x > 90 && x < 97) || x > 122)
-                    return true;
-            }
-
-            return false;
         }
     }
 }

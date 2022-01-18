@@ -11,7 +11,7 @@ export async function checkToken(TokenVal) {
 }
 
 export default async function ConfirmToken({token, setToken}) {
-    const confirmToken = await checkToken(token);
+    const confirmToken = await checkToken(token.TokenVal);
     if (confirmToken === "bad")
         setToken("");
 }

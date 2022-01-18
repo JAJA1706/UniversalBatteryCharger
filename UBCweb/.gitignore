@@ -5,6 +5,7 @@
 *.sln.docstates
 credentials
 loggedUsers
+userdata/
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
