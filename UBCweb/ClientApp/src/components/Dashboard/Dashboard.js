@@ -72,13 +72,13 @@ export default class Dashboard extends Component{
     }
 
     async getCanalList() {
-        const data = await fetch('http://localhost:5000/UserData/GetCanals/' + this.props.userID);
+        const data = await fetch('http://192.168.43.66:5000/UserData/GetCanals/' + this.props.userID);
         const jsonData = await data.json();
         this.setState({ canalData: jsonData, loadingData: false });
     }
 
     async addCanal() {
-        const response = await fetch('http://localhost:5000/UserData/AddCanal/' + this.props.userID, {
+        const response = await fetch('http://192.168.43.66:5000/UserData/AddCanal/' + this.props.userID, {
             method: 'PUT'
         }).then(data => data.json())
 
@@ -90,7 +90,7 @@ export default class Dashboard extends Component{
 
     async removeCanal() {
         const canalNum = this.state.selectedCanal;
-        await fetch('http://localhost:5000/UserData/RemoveCanal/' + this.props.userID, {
+        await fetch('http://192.168.43.66:5000/UserData/RemoveCanal/' + this.props.userID, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

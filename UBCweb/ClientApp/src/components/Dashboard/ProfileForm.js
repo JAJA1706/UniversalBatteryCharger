@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './ProfileForm.css';
 
 async function saveProfile(profile, userID, canalID, battery, profileNum) {
-    return fetch('http://localhost:5000/UserData/SaveProfile/' + userID + '/' + canalID + '/' + battery + '/' + profileNum, {
+    return fetch('http://192.168.43.66:5000/UserData/SaveProfile/' + userID + '/' + canalID + '/' + battery + '/' + profileNum, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -12,13 +12,13 @@ async function saveProfile(profile, userID, canalID, battery, profileNum) {
 }
 
 async function removeProfile(userID, canalID, battery, profileNum) {
-    await fetch('http://localhost:5000/UserData/RemoveProfile/' + userID + '/' + canalID + '/' + battery + '/' + profileNum, {
+    await fetch('http://192.168.43.66:5000/UserData/RemoveProfile/' + userID + '/' + canalID + '/' + battery + '/' + profileNum, {
         method: 'POST'
     });
 }
 
 async function getProfile(userID, canalID, battery, profileNum) {
-    const data = await fetch('http://localhost:5000/UserData/GetProfile/' + userID + '/' + canalID + '/' + battery + '/' + profileNum)
+    const data = await fetch('http://192.168.43.66:5000/UserData/GetProfile/' + userID + '/' + canalID + '/' + battery + '/' + profileNum)
     const jsonData = await data.json();
     return jsonData;
 }
@@ -88,7 +88,7 @@ export default function ProfileForm({ userID, canalID, battery, profile, setSele
             if (data.lookForEndingVoltageDrop === "") {
                 setLookForEndingVoltageDrop("tak");
             } else {
-                setLookForEndingVoltageDrop(data.method);
+                setLookForEndingVoltageDrop(data.lookForEndingVoltageDrop);
             }
         }
 
@@ -165,7 +165,7 @@ export default function ProfileForm({ userID, canalID, battery, profile, setSele
                 </label>
                 <label>
                     <p>Czy zwracac uwage na koncowy spadek napiecia</p>
-                    <select className="form-control" onChange={e => setLookForEndingVoltageDrop(e.target.value)} value={lookForEndingVoltageDrop} >
+                    <select className="form-control" onChange={e => setLookForEndingVoltageDrop(e.target.value)} defaultValue={lookForEndingVoltageDrop} >
                         <option>tak</option>
                         <option>nie</option>
                     </select>

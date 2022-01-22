@@ -1,7 +1,11 @@
 #include "headers/charger.h"
 #include "headers/sensors.h"
+#include <Wire.h>
+#include <Arduino.h>
 
 constexpr int Charger::NUMBER_OF_CANALS;
+int Charger::chargingCompletePercentage = 0;
+int Charger::currentCanalCharging = 0;
 
 Charger::Charger()
 {
@@ -44,7 +48,6 @@ void Charger::checkChargeQueue()
 
     regulator.applyProfile( profile );
     int result = monitor.checkForEndOfTheCharge( profile );
-
     if( result == 1 )
     {
         monitor.profileChargingEnded();
@@ -145,6 +148,7 @@ void Charger::batteryChargingStarted()
 {
     regulator.batteryChargingStarted(batteries[chargeQueue[0]].getOngoingChargingProfile().desiredVoltage);
     monitor.batteryChargingStarted();
+    currentCanalCharging = chargeQueue[0];
 }
 void Charger::batteryChargingEnded()
 {
@@ -187,4 +191,13 @@ void Charger::removeFromQueue(const int canal, int* queue)
 constexpr bool Charger::canalExist(const int canal) const
 {
     return canal >= 0 && canal < NUMBER_OF_CANALS;
+}
+
+void Charger::onBatteryDataRequest(){
+    String response;
+    response = String(currentCanalCharging) + '\n';
+    response += String(chargingCompletePercentage) + '\n';
+    response += String(Sensors::batteryVoltage, 2) + '\n';
+    response += String(Sensors::current, 2) + '\n';
+    Wire.write( response.c_str(), response.length() );
 }

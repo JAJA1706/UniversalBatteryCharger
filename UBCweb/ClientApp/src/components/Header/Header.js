@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import './Header.css'
 
 async function logoutUser(TokenVal) {
-    return fetch('http://localhost:5000/logout', {
+    return fetch('http://192.168.43.66:5000/logout', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

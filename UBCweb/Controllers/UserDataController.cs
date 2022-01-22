@@ -78,11 +78,13 @@ namespace UBCweb.Controllers
                 XmlElement chargingProfiles = xmlDoc.CreateElement("chargingProfiles");
 
                 XmlElement completion = xmlDoc.CreateElement("completion");
-                completion.InnerText = "0%";
+                completion.InnerText = "0";
                 XmlElement cellVoltage = xmlDoc.CreateElement("cellVoltage");
-                cellVoltage.InnerText = "0mV";
+                cellVoltage.InnerText = "0";
                 XmlElement currentFlowing = xmlDoc.CreateElement("currentFlowing");
-                currentFlowing.InnerText = "0mA";
+                currentFlowing.InnerText = "0";
+                XmlElement isNewData = xmlDoc.CreateElement("isNewData");
+                isNewData.InnerText = "0";
                 newBattery.AppendChild(mode);
                 newBattery.AppendChild(capacity);
                 newBattery.AppendChild(minVoltage);
@@ -90,16 +92,12 @@ namespace UBCweb.Controllers
                 newBattery.AppendChild(completion);
                 newBattery.AppendChild(cellVoltage);
                 newBattery.AppendChild(currentFlowing);
+                newBattery.AppendChild(isNewData);
             }
 
             root.AppendChild(newCanal);
 
-            lock (UserData.userDataLock)
-            {
-                FileStream fs = System.IO.File.OpenWrite(filePath);
-                xmlDoc.Save(fs);
-                fs.Close();
-            }
+            UserData.SaveXML(xmlDoc, filePath);
 
             return JsonSerializer.Serialize("ok");
         }
@@ -120,12 +118,7 @@ namespace UBCweb.Controllers
             XmlNode canalNode = root.SelectSingleNode(xPath);
             root.RemoveChild(canalNode);
 
-            lock (UserData.userDataLock)
-            {
-                FileStream fs = System.IO.File.Open(filePath, FileMode.Truncate);
-                xmlDoc.Save(fs);
-                fs.Close();
-            }
+            UserData.SaveXML(xmlDoc, filePath);
 
             return JsonSerializer.Serialize("ok");
         }
@@ -150,13 +143,10 @@ namespace UBCweb.Controllers
             capacity.InnerText = battery.Capacity;
             XmlNode minVoltage = capacity.NextSibling;
             minVoltage.InnerText = battery.MinVoltage;
+            XmlNode isNewData = root.SelectSingleNode(xPath+"/isNewData");
+            isNewData.InnerText = "1";
 
-            lock (UserData.userDataLock)
-            {
-                FileStream fs = System.IO.File.Open(filePath, FileMode.Truncate);
-                xmlDoc.Save(fs);
-                fs.Close();
-            }
+            UserData.SaveXML(xmlDoc, filePath);
 
             return JsonSerializer.Serialize("ok");
         }
@@ -175,13 +165,7 @@ namespace UBCweb.Controllers
             string xPath = String.Format("charger[{0}]/battery[{1}]", canal + 1, batteryNum + 1);
             XmlElement root = xmlDoc.DocumentElement;
             XmlNode batteryNode = root.SelectSingleNode(xPath);
-            Battery battery = new();
-            XmlNode mode = batteryNode.FirstChild;
-            battery.BatteryMode = mode.InnerText;
-            XmlNode capacity = mode.NextSibling;
-            battery.Capacity = capacity.InnerText;
-            XmlNode minVoltage = capacity.NextSibling;
-            battery.MinVoltage = minVoltage.InnerText;
+            Battery battery = UserData.GetBatteryDataFromNode(batteryNode);
 
             return JsonSerializer.Serialize(battery);
         }
@@ -264,12 +248,7 @@ namespace UBCweb.Controllers
 
             chargingProfiles.AppendChild(newProfile);
 
-            lock (UserData.userDataLock)
-            {
-                FileStream fs = System.IO.File.OpenWrite(filePath);
-                xmlDoc.Save(fs);
-                fs.Close();
-            }
+            UserData.SaveXML(xmlDoc, filePath);
 
             return JsonSerializer.Serialize("ok");
         }
@@ -291,12 +270,7 @@ namespace UBCweb.Controllers
             XmlNode chargingProfiles = profile.ParentNode;
             chargingProfiles.RemoveChild(profile);
 
-            lock (UserData.userDataLock)
-            {
-                FileStream fs = System.IO.File.Open(filePath, FileMode.Truncate);
-                xmlDoc.Save(fs);
-                fs.Close();
-            }
+            UserData.SaveXML(xmlDoc, filePath);
 
             return JsonSerializer.Serialize("ok");
         }
@@ -342,12 +316,7 @@ namespace UBCweb.Controllers
             XmlNode lookForEndingVoltageDrop = endingVoltageDrop.NextSibling;
             lookForEndingVoltageDrop.InnerText = profile.lookForEndingVoltageDrop;
 
-            lock (UserData.userDataLock)
-            {
-                FileStream fs = System.IO.File.Open(filePath, FileMode.Truncate);
-                xmlDoc.Save(fs);
-                fs.Close();
-            }
+            UserData.SaveXML(xmlDoc, filePath);
 
             return JsonSerializer.Serialize("ok");
         }
@@ -366,33 +335,7 @@ namespace UBCweb.Controllers
             string xPath = String.Format("charger[{0}]/battery[{1}]/chargingProfiles/profile[{2}]", canal + 1, batteryNum + 1, profileNum + 1);
             XmlElement root = xmlDoc.DocumentElement;
             XmlNode profileNode = root.SelectSingleNode(xPath);
-            Profile profile = new();
-            XmlNode method = profileNode.FirstChild;
-            profile.method = method.InnerText;
-            XmlNode maxVoltage = method.NextSibling;
-            profile.maxVoltage = maxVoltage.InnerText;
-            XmlNode maxCurrent = maxVoltage.NextSibling;
-            profile.maxCurrent = maxCurrent.InnerText;
-            XmlNode maxTemperature = maxCurrent.NextSibling;
-            profile.maxTemperature = maxTemperature.InnerText;
-            XmlNode maxTime = maxTemperature.NextSibling;
-            profile.maxTime = maxTime.InnerText;
-            XmlNode desiredVoltage = maxTime.NextSibling;
-            profile.desiredVoltage = desiredVoltage.InnerText;
-            XmlNode desiredCurrent = desiredVoltage.NextSibling;
-            profile.desiredCurrent = desiredCurrent.InnerText;
-            XmlNode voltageDeltaInverval = desiredCurrent.NextSibling;
-            profile.voltageDeltaInverval = voltageDeltaInverval.InnerText;
-            XmlNode minVoltageDelta = voltageDeltaInverval.NextSibling;
-            profile.minVoltageDelta = minVoltageDelta.InnerText;
-            XmlNode temperatureDeltaInterval = minVoltageDelta.NextSibling;
-            profile.temperatureDeltaInterval = temperatureDeltaInterval.InnerText;
-            XmlNode maxTemperatureDelta = temperatureDeltaInterval.NextSibling;
-            profile.maxTemperatureDelta = maxTemperatureDelta.InnerText;
-            XmlNode endingVoltageDrop = maxTemperatureDelta.NextSibling;
-            profile.endingVoltageDrop = endingVoltageDrop.InnerText;
-            XmlNode lookForEndingVoltageDrop = endingVoltageDrop.NextSibling;
-            profile.lookForEndingVoltageDrop = lookForEndingVoltageDrop.InnerText;
+            Profile profile = UserData.GetProfileDataFromNode(profileNode);
 
             return JsonSerializer.Serialize(profile);
         }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 async function getBatteryMonitorData(userID, canalID, battery, profileNum) {
-    const data = await fetch('http://localhost:5000/UserData/GetMonitorData/' + userID + '/' + canalID + '/' + battery)
+    const data = await fetch('http://192.168.43.66:5000/UserData/GetMonitorData/' + userID + '/' + canalID + '/' + battery)
     const jsonData = await data.json();
     return jsonData;
 }
@@ -34,9 +34,9 @@ export default function Monitor({ userID, canalID, battery }) {
                 </thead>
                 <tbody>
                     <tr>
-                        <td>{completionPercent}</td>
-                        <td>{cellVoltage}</td>
-                        <td>{currentFlowing}</td>
+                        <td>{completionPercent}%</td>
+                        <td>{cellVoltage}mV</td>
+                        <td>{currentFlowing}mA</td>
                     </tr>
                 </tbody>
             </table>

@@ -76,7 +76,7 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
         if(meanBatteryVoltage >= profile.desiredVoltage)
         {
             result = 1;
-            Serial.print("balz1");
+            Serial.print("koniec1 ");
         }
     }
     else if(profile.method == ChargingMethod::constantVoltage)
@@ -86,12 +86,12 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
         || Sensors::batteryVoltage > profile.desiredVoltage + profile.desiredVoltage * PERMISSIBLE_ERROR)
         {
             result = -1;
-            Serial.print("balz2");
+            Serial.print("koniec2 ");
         }
         if(Sensors::current <= profile.desiredCurrent)
         {
             result = 1;
-            Serial.print("balz3");
+            Serial.print("koniec3 ");
         }
     }
 
@@ -100,14 +100,14 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
         if(maxRecordedVoltage - meanBatteryVoltage >= profile.endingVoltageDrop)
         {
             result = 1;
-            Serial.print("balz4");
+            Serial.print("koniec4 ");
         }
     }
 
     if( maxProfileValueHasBeenExceeded(profile) )
     {
         result = -1;
-        Serial.print("balz5");
+        Serial.print("koniec5 ");
     }
 
     if(newVoltageData)
@@ -122,7 +122,7 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
             if( i == REQUIRED_INTERVAL_RESULTS_TO_END)
             {
                 result = 2;
-                Serial.print("balz6");
+                Serial.print("koniec6 ");
             }
         }
     }
@@ -138,7 +138,7 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
             if( i == REQUIRED_INTERVAL_RESULTS_TO_END)
             {
                 result = 2;
-                Serial.print("balz7");
+                Serial.print("koniec7 ");
             }
         }
     }
@@ -146,7 +146,7 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
     if(profileChargingTime >= profile.maxTime)
     {
         result = 2;
-        Serial.print("balz8");
+        Serial.print("koniec8 ");
     }
 
     return result;

@@ -80,7 +80,7 @@ export default class BatteryForm extends Component {
             return (
                 <div className="batteryAndMonitor">
                     <div className="batteryFormStyle">
-                        <BatteryRadio onRadioChange={this.onRadioChange} />
+                        <BatteryRadio selectedBattery={this.state.batteryChosen} onRadioChange={this.onRadioChange} />
                         <form>
                             <label>
                                 <p>Pojemnosc</p>
@@ -119,7 +119,7 @@ export default class BatteryForm extends Component {
     }
 
     async saveBatteryData(data) {
-        await fetch('http://localhost:5000/UserData/SaveBattery/' + this.props.userID + '/' + this.props.canalID + '/' + this.state.batteryChosen, {
+        await fetch('http://192.168.43.66:5000/UserData/SaveBattery/' + this.props.userID + '/' + this.props.canalID + '/' + this.state.batteryChosen, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -129,7 +129,7 @@ export default class BatteryForm extends Component {
     }
 
     async getBatteryData() {
-        const data = await fetch('http://localhost:5000/UserData/GetBattery/' + this.props.userID + '/' + this.props.canalID + '/' + this.state.batteryChosen)
+        const data = await fetch('http://192.168.43.66:5000/UserData/GetBattery/' + this.props.userID + '/' + this.props.canalID + '/' + this.state.batteryChosen)
         const jsonData = await data.json();
         this.setState({
             batteryMode: jsonData.BatteryMode,
@@ -139,13 +139,13 @@ export default class BatteryForm extends Component {
     }
 
     async getProfileList() {
-        const data = await fetch('http://localhost:5000/UserData/GetProfilesList/' + this.props.userID + '/' + this.props.canalID + '/' + this.state.batteryChosen);
+        const data = await fetch('http://192.168.43.66:5000/UserData/GetProfilesList/' + this.props.userID + '/' + this.props.canalID + '/' + this.state.batteryChosen);
         const jsonData = await data.json();
         this.setState({ profilesData: jsonData, loadingData: false });
     }
 
     async addProfile() {
-        const response = await fetch('http://localhost:5000/UserData/AddProfile/' + this.props.userID + '/' + this.props.canalID + '/' + this.state.batteryChosen, {
+        const response = await fetch('http://192.168.43.66:5000/UserData/AddProfile/' + this.props.userID + '/' + this.props.canalID + '/' + this.state.batteryChosen, {
             method: 'PUT'
         }).then(data => data.json())
 

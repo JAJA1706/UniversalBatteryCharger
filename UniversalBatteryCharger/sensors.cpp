@@ -52,7 +52,7 @@ void Sensors::getDataFromSensors()
 
     batteryTemperature = measureTemperature(TEMPERATURE_PIN);
 
-    Serial.print("battery voltage: ");
+    Serial.print("voltage: ");
     Serial.print(batteryVoltage);
     Serial.print("   current: ");
     Serial.println(current);
@@ -64,7 +64,7 @@ double Sensors::measureVoltage(const int analogPin, const double dividerMultiply
 {
 	double splitedMean = 0;
     int badSamples = 0;
-	const int NUMBER_OF_SAMPLES = 80;
+	const int NUMBER_OF_SAMPLES = 60;
     for(int i = 0; i < NUMBER_OF_SAMPLES; ++i)
     {
         int readValue = analogRead(analogPin);
@@ -83,7 +83,7 @@ double Sensors::measureVoltage(const int analogPin, const double dividerMultiply
         }
         splitedMean += result/NUMBER_OF_SAMPLES;
         
-        delay(15);
+        delay(2);
     }
     return splitedMean;
 }

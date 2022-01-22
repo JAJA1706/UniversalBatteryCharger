@@ -12,6 +12,8 @@ private:
     int dischargeQueue[NUMBER_OF_CANALS];
     CurrentRegulator regulator;
     ChargingMonitor monitor;
+    static int chargingCompletePercentage;
+    static int currentCanalCharging;
 
     void setBatteryMode(const int canal, const BatteryMode newMode);
     void adjustRelays();
@@ -28,4 +30,5 @@ public:
     bool addBattery(const int canal, const Battery newBattery);
     void charge(const int canal);
     void discharge(const int canal);
+    static void onBatteryDataRequest();
 };

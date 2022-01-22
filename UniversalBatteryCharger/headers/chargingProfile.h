@@ -4,7 +4,6 @@ enum class ChargingMethod
 {
     constantCurrent,
     constantVoltage,
-    trickleCharge
 };
 
 struct ChargingProfile
@@ -32,4 +31,6 @@ struct ChargingProfile
     double _maxTemperature, unsigned long _maxTime, double _desiredVoltage, double _desiredCurrent,
     unsigned long _voltageDeltaInterval, double _minVoltageDelta, unsigned long _temperatureDeltaInterval,
     double _maxTemperatureDelta, double _endingVoltageDrop, bool _lookForEndingVoltageDrop);
+    
+    void print();
 };
