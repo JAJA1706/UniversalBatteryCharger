@@ -1,4 +1,5 @@
 #include "headers/chargingProfile.h"
+#include <Arduino.h>
 
 ChargingProfile::ChargingProfile() :
     method(ChargingMethod::constantCurrent),
@@ -34,3 +35,22 @@ ChargingProfile::ChargingProfile( ChargingMethod _method, double _maxVoltage, do
     maxTemperatureDelta(_maxTemperatureDelta),
     endingVoltageDrop(_endingVoltageDrop),
     lookForEndingVoltageDrop(_lookForEndingVoltageDrop) {}
+
+void ChargingProfile::print(){
+    if(method == ChargingMethod::constantVoltage)
+        Serial.println("stale napiecie");
+    else
+        Serial.println("staly prad");
+    Serial.println(maxVoltage);
+    Serial.println(maxCurrent);
+    Serial.println(maxTemperature);
+    Serial.println(maxTime);
+    Serial.println(desiredVoltage);
+    Serial.println(desiredCurrent);
+    Serial.println(voltageDeltaInterval);
+    Serial.println(minVoltageDelta);
+    Serial.println(temperatureDeltaInterval);
+    Serial.println(maxTemperatureDelta);
+    Serial.println(endingVoltageDrop);
+    Serial.println(lookForEndingVoltageDrop);
+}

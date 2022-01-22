@@ -10,8 +10,9 @@ enum class BatteryMode
 
 class Battery
 {
+public:
+   static constexpr int MAX_NUM_OF_STEPS = 4;
 private:
-    static constexpr int MAX_NUM_OF_STEPS = 4;
     int numberOfSteps;
     int currentStep;
     ChargingProfile steps[MAX_NUM_OF_STEPS];

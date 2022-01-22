@@ -1,0 +1,12 @@
+ul{
+    list-style: none;
+    padding-left: 0px;
+    padding-right: 20px;
+}
+
+.canalStyle {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    max-width: 400px
+}
