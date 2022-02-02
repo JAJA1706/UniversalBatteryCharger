@@ -1,6 +1,7 @@
 #pragma once
 #include "chargingProfile.h"
 #include "iterator.h"
+#include "sensors.h"
 
 class CurrentRegulator
 {
@@ -13,11 +14,14 @@ private:
 	const int PWM_PIN_REGULATOR;
     const int ANALOG_WRITE_MAX;
     const int TRANSISTOR_NEARLY_OPEN_VAL;
+    const int TRANSISTOR_FULLY_OPEN;
     const int REGULATOR_STEPS_EQUAL_TO_TRANSISTOR;
     const double MAX_REGULATOR_ADJUST_VOLTAGE;
     const double REGULATOR_REFERENCE_VOLTAGE;
     int transValue;
     int regulValue;
+
+    Sensors* sensors;
 
     InfiniteIterator transValueIter;
     int transValueHistory[HISTORY_SIZE];
@@ -34,6 +38,7 @@ private:
     void balancePowerDissipation();
 public:
     CurrentRegulator();
+    void setSensors(Sensors* sensorsPtr);
     void batteryChargingStarted(const double desiredVoltage);
     void batteryChargingEnded();
     void applyProfile( const ChargingProfile& profile );

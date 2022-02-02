@@ -21,36 +21,39 @@ void BatteryBuilder::setLinkedCharger(Charger* chargerPtr){
     charger = chargerPtr;
 }
 
-void BatteryBuilder::putBatteryInCharger(const Battery& newBattery){
-    profilesIterator = 0;
-    buildingProfiles = true;
+void BatteryBuilder::putBatteryInLinkedCharger(){
     charger->addBattery(batteryCanal, newBattery);
+
+    if(newMode == BatteryMode::Charge)
+        charger->charge(batteryCanal);
+    else if(newMode == BatteryMode::Discharge)
+        charger->discharge(batteryCanal);
+
+    newBatteryReady = false;
 }
 
 void BatteryBuilder::buildBattery(const String& batteryJSON){
     deserializeJson(doc, batteryJSON);
-    BatteryMode mode;
     double capacity;
     double minVoltage;
 
     String batteryMode = doc["BatteryMode"];
     if(batteryMode == "laduj")
-        mode = BatteryMode::Charge;
+        newMode = BatteryMode::Charge;
     else if(batteryMode == "rozladuj")
-        mode = BatteryMode::Discharge;
+        newMode = BatteryMode::Discharge;
     else
-        mode = BatteryMode::Wait;
+        newMode = BatteryMode::Wait;
     
 
     capacity = doc["Capacity"];
     minVoltage = doc["MinVoltage"];
-    Battery newBattery(profilesIterator,minVoltage,capacity,buildedBatteryProfiles);
-    putBatteryInCharger(newBattery);
+    Battery battery(profilesIterator,minVoltage,capacity,buildedBatteryProfiles);
+    newBattery = battery;
+    newBatteryReady = true;
 
-    if(mode == BatteryMode::Charge)
-        charger->charge(batteryCanal);
-    else if(mode == BatteryMode::Discharge)
-        charger->discharge(batteryCanal);
+    profilesIterator = 0;
+    buildingProfiles = true;
 }
 
 void BatteryBuilder::buildBatteryProfile(const String& profileJSON){
@@ -112,4 +115,8 @@ void BatteryBuilder::onReceiveString(int bytes){
         builder.buildBattery(I2CString);
     }
     I2CString = "";
+}
+
+bool BatteryBuilder::isNewBatteryReady(){
+    return newBatteryReady;
 }

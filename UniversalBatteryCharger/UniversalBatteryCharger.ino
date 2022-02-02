@@ -2,24 +2,29 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "headers/charger.h"
-#include "headers/sensors.h"
 #include "headers/batteryBuilder.h"
 
-Sensors sensors;
 Charger charger;
 
 void setup() {
   analogReference(INTERNAL1V1);
   Serial.begin(115200);
   while(!Serial){}
-  Serial.println("Jazdunia!!!");
+  Serial.println("Witamy w uniwersalnym systemie do ładowania akumulatorów!");
+
   builder.setLinkedCharger(&charger);
   Wire.onRequest(Charger::onBatteryDataRequest);
 }
 
 void loop() 
 {
-    sensors.getDataFromSensors();
+    charger.getSensorData();
     charger.adjustElectricalComponents();
+
+    if( builder.isNewBatteryReady())
+    {
+      builder.putBatteryInLinkedCharger();
+    }
+
     delay(100);
 }

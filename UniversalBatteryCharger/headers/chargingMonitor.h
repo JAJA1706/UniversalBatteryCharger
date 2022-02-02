@@ -1,6 +1,7 @@
 #pragma once
 #include "chargingProfile.h"
 #include "iterator.h"
+#include "sensors.h"
 
 class ChargingMonitor
 {
@@ -9,6 +10,8 @@ private:
     static constexpr int MEAN_TABLE_SIZE = 20;
     const int REQUIRED_RESULTS_TO_END;
     const int REQUIRED_INTERVAL_RESULTS_TO_END;
+
+    Sensors* sensors;
 
     unsigned long batteryStartTime;
     unsigned long batteryChargingTime;
@@ -33,8 +36,8 @@ private:
     double meanBatteryVoltage;
     double maxRecordedVoltage;
     
-    double percentComplete; //do zrobienia
-    bool finalPhase; //do zrobienia
+    double storedEnergy;
+    double energyTimer;
 
     int checkForTerminalValues(const ChargingProfile& profile ) const;
     void checkTimer();
@@ -43,12 +46,15 @@ private:
     void savePotentialMaxVoltage();
     void clearBufferTables();
     void resetStateCounters();
-    unsigned long getPassedTime(const unsigned startTime) const;
+    unsigned long getPassedTime(const unsigned long startTime) const;
     bool maxProfileValueHasBeenExceeded(const ChargingProfile& profile) const;
+    void calculateStoredEnergy();
 public:
     ChargingMonitor();
+    void setSensors(Sensors* sensorsPtr);
     void batteryChargingStarted();
     void batteryChargingEnded();
     void profileChargingEnded();
     int checkForEndOfTheCharge(const ChargingProfile& profile);
+    double getCompletePercentage(const double batteryCapacity);
 };

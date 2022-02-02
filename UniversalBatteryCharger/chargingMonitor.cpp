@@ -1,5 +1,4 @@
 #include "headers/chargingMonitor.h"
-#include "headers/sensors.h"
 #include "Arduino.h"
 
 constexpr int ChargingMonitor::TIMED_TABLE_SIZE;
@@ -24,10 +23,15 @@ ChargingMonitor::ChargingMonitor() :
     meanTableIter(MEAN_TABLE_SIZE),
     meanBatteryVoltage(0),
     maxRecordedVoltage(0),
-    percentComplete(0),
-    finalPhase(true)
+    storedEnergy(0),
+    energyTimer(0)
 {
     clearBufferTables();
+}
+
+void ChargingMonitor::setSensors(Sensors* sensorsPtr)
+{
+    sensors = sensorsPtr;
 }
 
 int ChargingMonitor::checkForEndOfTheCharge(const ChargingProfile& profile)
@@ -35,6 +39,7 @@ int ChargingMonitor::checkForEndOfTheCharge(const ChargingProfile& profile)
     checkTimer();
     fillTimedTables(profile.voltageDeltaInterval, profile.temperatureDeltaInterval);
     calculateMeanVoltage();
+    calculateStoredEnergy();
     savePotentialMaxVoltage();
 
     int potentialResult = checkForTerminalValues(profile);
@@ -82,20 +87,20 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
     else if(profile.method == ChargingMethod::constantVoltage)
     {
         const double PERMISSIBLE_ERROR = 0.05;
-        if(Sensors::batteryVoltage < profile.desiredVoltage - profile.desiredVoltage * PERMISSIBLE_ERROR
-        || Sensors::batteryVoltage > profile.desiredVoltage + profile.desiredVoltage * PERMISSIBLE_ERROR)
+        if(sensors->batteryVoltage < profile.desiredVoltage - profile.desiredVoltage * PERMISSIBLE_ERROR
+        || sensors->batteryVoltage > profile.desiredVoltage + profile.desiredVoltage * PERMISSIBLE_ERROR)
         {
             result = -1;
             Serial.print("koniec2 ");
         }
-        if(Sensors::current <= profile.desiredCurrent)
+        if(sensors->current <= profile.desiredCurrent)
         {
             result = 1;
             Serial.print("koniec3 ");
         }
     }
 
-    if(finalPhase && profile.lookForEndingVoltageDrop)
+    if(profile.lookForEndingVoltageDrop)
     {
         if(maxRecordedVoltage - meanBatteryVoltage >= profile.endingVoltageDrop)
         {
@@ -110,6 +115,18 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
         Serial.print("koniec5 ");
     }
 
+    if(sensors->batteryVoltage < profile.desiredVoltage*0.5) //probably no battery
+    {
+        const double ION_BATTERY_VOLTAGE = 4200;
+        const double NiMH_BATTERY_VOLTAGE = 1200;
+        if( !((sensors->batteryVoltage > ION_BATTERY_VOLTAGE*0.5 && sensors->batteryVoltage < ION_BATTERY_VOLTAGE*1.5)
+          ||  (sensors->batteryVoltage > NiMH_BATTERY_VOLTAGE*0.5 && sensors->batteryVoltage < NiMH_BATTERY_VOLTAGE*1.5)) )
+        {
+            result = -1;
+            Serial.print("koniec6 ");
+        }    
+    }
+
     if(newVoltageData)
     {
         for(int i = 1; i <= REQUIRED_INTERVAL_RESULTS_TO_END; ++i)
@@ -122,7 +139,7 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
             if( i == REQUIRED_INTERVAL_RESULTS_TO_END)
             {
                 result = 2;
-                Serial.print("koniec6 ");
+                Serial.print("koniec7 ");
             }
         }
     }
@@ -138,7 +155,7 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
             if( i == REQUIRED_INTERVAL_RESULTS_TO_END)
             {
                 result = 2;
-                Serial.print("koniec7 ");
+                Serial.print("koniec8 ");
             }
         }
     }
@@ -146,7 +163,7 @@ int ChargingMonitor::checkForTerminalValues(const ChargingProfile& profile ) con
     if(profileChargingTime >= profile.maxTime)
     {
         result = 2;
-        Serial.print("koniec8 ");
+        Serial.print("koniec9 ");
     }
 
     return result;
@@ -177,7 +194,7 @@ void ChargingMonitor::fillTimedTables(const unsigned long voltageInvervalTime, c
 
     if( temperatureInvervalTime != 0 && temperatureTimer + temperatureInvervalTime < now )
     {
-        temperatureInIntervals[temperatureTableIter.at()] = Sensors::batteryTemperature;
+        temperatureInIntervals[temperatureTableIter.at()] = sensors->batteryTemperature;
         newTemperatureData = true;
         temperatureTimer = now;
         ++temperatureTableIter;
@@ -190,10 +207,10 @@ void ChargingMonitor::fillTimedTables(const unsigned long voltageInvervalTime, c
 
 void ChargingMonitor::calculateMeanVoltage()
 {
-    if( Sensors::current <= 10 )
+    if( sensors->current <= 10 )
         return;
 
-    meanVoltageTable[meanTableIter.at()] = Sensors::batteryVoltage;
+    meanVoltageTable[meanTableIter.at()] = sensors->batteryVoltage;
     ++meanTableIter;
     
     meanBatteryVoltage = 0;
@@ -224,6 +241,10 @@ void ChargingMonitor::batteryChargingStarted()
     temperatureTableIter = 0;
     newTemperatureData = false;
     meanTableIter = 0;
+    maxRecordedVoltage = 0;
+    meanBatteryVoltage = 0;
+    storedEnergy = 0;
+    energyTimer = now;
 
     clearBufferTables();
 }
@@ -245,7 +266,7 @@ void ChargingMonitor::resetStateCounters()
     wrongStateCounter = 0;
 }
 
-unsigned long ChargingMonitor::getPassedTime(const unsigned startTime) const
+unsigned long ChargingMonitor::getPassedTime(const unsigned long startTime) const
 {
     unsigned long currentTime = millis();
     if(currentTime >= startTime) //timer overflow protection
@@ -269,7 +290,33 @@ void ChargingMonitor::clearBufferTables()
 
 bool ChargingMonitor::maxProfileValueHasBeenExceeded(const ChargingProfile& profile) const
 {
-    return Sensors::current > profile.maxCurrent || 
+    return sensors->current > profile.maxCurrent || 
     meanBatteryVoltage > profile.maxVoltage || 
-    Sensors::batteryTemperature > profile.maxTemperature;
+    sensors->batteryTemperature > profile.maxTemperature;
+}
+
+void ChargingMonitor::calculateStoredEnergy()
+{
+    unsigned long now = millis();
+    const unsigned MINUTE = 60000;
+    const double MINUTE_TO_HOUR_RATIO = 0.016666;
+    if( energyTimer + MINUTE < now )
+    {
+        storedEnergy += sensors->current * MINUTE_TO_HOUR_RATIO;
+        energyTimer = now;
+    }
+
+}
+
+double ChargingMonitor::getCompletePercentage(const double batteryCapacity)
+{
+    const double CHARGING_EFFICIENCY = 0.85;
+    double completePercentage = storedEnergy*CHARGING_EFFICIENCY / batteryCapacity;
+
+    if(completePercentage > 100)
+        completePercentage = 100;
+    if(completePercentage < 0)
+        completePercentage = 0;
+
+    return completePercentage;
 }
