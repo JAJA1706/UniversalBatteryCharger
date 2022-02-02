@@ -24,16 +24,16 @@ private:
 	constexpr double voltageDividerMultiplier(const double firstRes, const double secondRes) const;
 	double measureVoltage(const int analogPin, const double dividerMultiply);
     double measureTemperature(const int analogPin);
-public:
-	static double current;
-	static double batteryVoltage;
-	static double dischargeBatteryVoltage;
-	static double regulatorVoltageDrop;
-	static double transistorVoltageDrop;
-	static double powerResistorVoltageDrop;
-	static double batteryTemperature;
-	
 
+public:
+	double current;
+	double batteryVoltage;
+	double dischargeBatteryVoltage;
+	double regulatorVoltageDrop;
+	double transistorVoltageDrop;
+	double powerResistorVoltageDrop;
+	double batteryTemperature;
+	
 	Sensors();
 	void getDataFromSensors();
 };

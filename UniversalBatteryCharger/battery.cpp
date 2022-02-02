@@ -71,3 +71,8 @@ bool Battery::isChargingCompleted()
 
     return false;
 }
+
+double Battery::getCapacity()
+{
+    return capacity;
+}

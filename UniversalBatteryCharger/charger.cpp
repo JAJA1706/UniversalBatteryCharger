@@ -4,39 +4,77 @@
 #include <Arduino.h>
 
 constexpr int Charger::NUMBER_OF_CANALS;
-int Charger::chargingCompletePercentage = 0;
-int Charger::currentCanalCharging = 0;
+double Charger::completePercentageToSend = 0;
+int Charger::currentCanalChargingToSend = -1;
+double Charger::batteryVoltageToSend = 0;
+double Charger::currentToSend = 0;
 
-Charger::Charger()
+Charger::Charger() :  manual{ManualControl(29,31,52), ManualControl(30,32,33)}, chargingRelays{50,25}, dischargingRelays{51,53}
 {
     for(int i = 0; i < NUMBER_OF_CANALS; ++i)
     {
         batteries[i] = Battery();
         dischargeQueue[i] = -1;
         chargeQueue[i] = -1;
+        pinMode(chargingRelays[i], OUTPUT);
+        digitalWrite(chargingRelays[i], HIGH);
+        pinMode(dischargingRelays[i], OUTPUT);
+        digitalWrite(dischargingRelays[i], HIGH);
+        manual[i].linkBattery(&batteries[i]);
     }
+    
+    regulator.setSensors(&sensors);
+    monitor.setSensors(&sensors);
+}
+
+void Charger::getSensorData()
+{
+    sensors.getDataFromSensors();
+    batteryVoltageToSend = sensors.batteryVoltage;
+    currentToSend = sensors.current;
 }
 
 void Charger::adjustElectricalComponents()
 {
+    handleManualInputs();
     adjustRelays();
     checkChargeQueue();
     checkDischargeQueue();
 }
 
+void Charger::handleManualInputs()
+{
+    for(int i = 0; i < NUMBER_OF_CANALS; ++i)
+    {
+        BatteryMode mode = manual[i].checkForNewBatteryState();
+        if( mode != batteries[i].getMode() )
+        {
+            setBatteryMode(i, mode);
+        }
+    }
+}
+
 void Charger::adjustRelays()
 {
-    /*for(int i = 0; i < NUMBER_OF_CANALS; ++i)
+    for(int i = 0; i < NUMBER_OF_CANALS; ++i)
     {
-        //disconect relays of waiting batteries
+        BatteryMode mode = batteries[i].getMode();
+        switch(mode)
+        {
+            case BatteryMode::Charge:
+                digitalWrite(chargingRelays[i], LOW);
+                digitalWrite(dischargingRelays[i], HIGH);
+                break;
+            case BatteryMode::Discharge:
+                digitalWrite(chargingRelays[i], HIGH);
+                digitalWrite(dischargingRelays[i], LOW);
+                break;
+           default:
+                digitalWrite(chargingRelays[i], HIGH);
+                digitalWrite(dischargingRelays[i], HIGH);
+                break;
+        }
     }
-    for(int i = 1; i < NUMBER_OF_CANALS; ++i)
-    {
-        //disconnect relays of batteries in queues
-    }
-    connect charged relay
-    connect discharge relay
-    }*/
 }
 
 void Charger::checkChargeQueue()
@@ -48,6 +86,7 @@ void Charger::checkChargeQueue()
 
     regulator.applyProfile( profile );
     int result = monitor.checkForEndOfTheCharge( profile );
+    completePercentageToSend = monitor.getCompletePercentage( batteries[chargeQueue[0]].getCapacity() );
     if( result == 1 )
     {
         monitor.profileChargingEnded();
@@ -61,7 +100,6 @@ void Charger::checkChargeQueue()
     {
         setBatteryMode(chargeQueue[0], BatteryMode::Wait);
     }
-
 }
 
 void Charger::checkDischargeQueue()
@@ -70,18 +108,19 @@ void Charger::checkDischargeQueue()
         return;
 
     double cutOffVoltage = batteries[dischargeQueue[0]].getMinVoltage();
-    if( cutOffVoltage <= Sensors::dischargeBatteryVoltage)
+    if( cutOffVoltage <= sensors.dischargeBatteryVoltage)
     {
         setBatteryMode(dischargeQueue[0], BatteryMode::Wait);
     }
 
 }
 
-bool Charger::addBattery(const int canal, const Battery newBattery)
+bool Charger::addBattery(const int canal, Battery newBattery)
 {
     if( !canalExist(canal) )
         return false;
 
+    newBattery.setMode(batteries[canal].getMode());
     batteries[canal] = newBattery;
     return true;
 }
@@ -104,8 +143,9 @@ void Charger::discharge(const int canal)
 
 void Charger::setBatteryMode(const int canal, const BatteryMode newMode)
 {
-    if( batteries[canal].getMode() == newMode)
+    if( batteries[canal].getMode() == newMode){
         return;
+    }
 
     if( batteries[canal].isCharged() )
     {
@@ -114,7 +154,7 @@ void Charger::setBatteryMode(const int canal, const BatteryMode newMode)
             batteryChargingEnded();
         }
         removeFromQueue(canal, chargeQueue);
-        if( chargeQueue[0] != -1)
+        if( canal == 0 && chargeQueue[0] != -1)
         {
             batteryChargingStarted();
         }
@@ -124,7 +164,6 @@ void Charger::setBatteryMode(const int canal, const BatteryMode newMode)
     {
         removeFromQueue(canal, dischargeQueue);
     }
-
     switch (newMode)
     {
     case BatteryMode::Charge:
@@ -148,12 +187,14 @@ void Charger::batteryChargingStarted()
 {
     regulator.batteryChargingStarted(batteries[chargeQueue[0]].getOngoingChargingProfile().desiredVoltage);
     monitor.batteryChargingStarted();
-    currentCanalCharging = chargeQueue[0];
+    currentCanalChargingToSend = chargeQueue[0];
+    completePercentageToSend = 0;
 }
 void Charger::batteryChargingEnded()
 {
     regulator.batteryChargingEnded();
     monitor.batteryChargingEnded();
+    currentCanalChargingToSend = -1;
 }
 
 int Charger::pushBackToQueue(const int canal, int* queue)
@@ -195,9 +236,9 @@ constexpr bool Charger::canalExist(const int canal) const
 
 void Charger::onBatteryDataRequest(){
     String response;
-    response = String(currentCanalCharging) + '\n';
-    response += String(chargingCompletePercentage) + '\n';
-    response += String(Sensors::batteryVoltage, 2) + '\n';
-    response += String(Sensors::current, 2) + '\n';
+    response = String(currentCanalChargingToSend) + '\n';
+    response += String(completePercentageToSend, 2) + '\n';
+    response += String(batteryVoltageToSend, 2) + '\n';
+    response += String(currentToSend, 2) + '\n';
     Wire.write( response.c_str(), response.length() );
 }

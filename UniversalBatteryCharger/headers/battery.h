@@ -28,9 +28,9 @@ public:
     bool isCharged() const;
     bool isDischarged() const;
     double getMinVoltage() const;
+    double getCapacity();
     BatteryMode getMode() const;
     void setMode(const BatteryMode newMode);
     void moveToNextStep();
     bool isChargingCompleted();
-
 };

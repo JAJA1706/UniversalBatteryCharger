@@ -25,6 +25,7 @@ void loop() {
     
     if (WiFi.status() == WL_CONNECTED) {
         getBatteryDataFromServer(0);
+		getBatteryDataFromServer(1);
         sendBatteryDataToServer();
     }
     else{
@@ -127,6 +128,11 @@ void sendBatteryDataToServer(){
     int indexStart = 0;
     int indexEnd = tempBuffer.indexOf('\n', indexStart);
     String currentCanal = tempBuffer.substring(indexStart,indexEnd);
+	if(currentCanal == "-1")
+	{
+		return;
+	}
+	
     indexStart = indexEnd + 1;
     indexEnd = tempBuffer.indexOf('\n', indexStart);
     String percentage = tempBuffer.substring(indexStart,indexEnd);
@@ -137,8 +143,8 @@ void sendBatteryDataToServer(){
     indexEnd = tempBuffer.indexOf('\n', indexStart);
     String current = tempBuffer.substring(indexStart,indexEnd);
     
-    String jsonBody = "{\"Completion\":\"" + String(percentage) + "\", \"CellVoltage\":\"" + String(batteryVoltage) + "\", \"CurrentFlowing\":\"" + String(current) + "\"}";
-    String serverName = "http://192.168.43.66:5000/Microcontroller/sendChargingData/9/0/" + String(currentCanal);
+    String jsonBody = "{\"Completion\":\"" + percentage + "\", \"CellVoltage\":\"" + batteryVoltage + "\", \"CurrentFlowing\":\"" + current + "\"}";
+    String serverName = "http://192.168.43.66:5000/Microcontroller/sendChargingData/9/0/" + currentCanal;
     http.begin(client, serverName);
     http.addHeader("Content-Type", "application/json");
     http.POST(jsonBody);

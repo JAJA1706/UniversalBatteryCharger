@@ -19,6 +19,11 @@ namespace UBCweb.Controllers
         public string GetBatteryData(int userID, int canalNum, int batteryNum)
         {
             string filePath = UserData.GetUserDataFilePath(userID);
+            if (!System.IO.File.Exists(filePath))
+            {
+                return JsonSerializer.Serialize("no");
+            }
+
             XmlDocument xmlDoc = new();
             lock (UserData.userDataLock)
             {
@@ -69,6 +74,11 @@ namespace UBCweb.Controllers
         public string SaveChargingData(int userID, int canalNum, int batteryNum, BatteryMonitorData data)
         {
             string filePath = UserData.GetUserDataFilePath(userID);
+            if (!System.IO.File.Exists(filePath))
+            {
+                return JsonSerializer.Serialize("no");
+            }
+
             XmlDocument xmlDoc = new();
             lock (UserData.userDataLock)
             {
@@ -94,6 +104,13 @@ namespace UBCweb.Controllers
                 xmlDoc.Save(fs);
                 fs.Close();
             }
+
+            ////do testowwwwwwwwwww
+            //string testData = data.Completion + ';' + data.CellVoltage + ';' + data.CurrentFlowing + '\n';
+            //FileStream pog = System.IO.File.OpenWrite("testy.csv");
+            //pog.Seek(0, SeekOrigin.End);
+            //pog.Write(Encoding.UTF8.GetBytes(testData));
+            //pog.Close();
 
             return JsonSerializer.Serialize("ok");
         }
