@@ -59,21 +59,21 @@ void Charger::adjustRelays()
     for(int i = 0; i < NUMBER_OF_CANALS; ++i)
     {
         BatteryMode mode = batteries[i].getMode();
-        switch(mode)
+        if(mode == BatteryMode::Wait)
         {
-            case BatteryMode::Charge:
-                digitalWrite(chargingRelays[i], LOW);
-                digitalWrite(dischargingRelays[i], HIGH);
-                break;
-            case BatteryMode::Discharge:
-                digitalWrite(chargingRelays[i], HIGH);
-                digitalWrite(dischargingRelays[i], LOW);
-                break;
-           default:
-                digitalWrite(chargingRelays[i], HIGH);
-                digitalWrite(dischargingRelays[i], HIGH);
-                break;
+            digitalWrite(chargingRelays[i], HIGH);
+            digitalWrite(dischargingRelays[i], HIGH);
         }
+    }
+    if(chargeQueue[0] != -1)
+    {
+        digitalWrite(chargingRelays[chargeQueue[0]], LOW);
+        digitalWrite(dischargingRelays[chargeQueue[0]], HIGH);        
+    }
+    if(dischargeQueue[0] != -1)
+    {
+        digitalWrite(chargingRelays[dischargeQueue[0]], HIGH);
+        digitalWrite(dischargingRelays[dischargeQueue[0]], LOW);        
     }
 }
 
