@@ -312,6 +312,7 @@ double ChargingMonitor::getCompletePercentage(const double batteryCapacity)
 {
     const double CHARGING_EFFICIENCY = 0.85;
     double completePercentage = storedEnergy*CHARGING_EFFICIENCY / batteryCapacity;
+    completePercentage *= 100;
 
     if(completePercentage > 100)
         completePercentage = 100;
