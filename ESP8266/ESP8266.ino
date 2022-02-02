@@ -3,7 +3,7 @@
 #include <Wire.h>
  
 const char* ssid = "Kowalnet";
-const char* password = "bigdupsko";
+const char* password = "";
 const int status = WL_IDLE_STATUS;
 const String nothingToDo = "\"no\"";
 WiFiClient client;
